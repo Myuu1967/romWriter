@@ -1,0 +1,18 @@
+Reference,Value,Datasheet,Footprint,Qty,備考
+"C1,C3-C12",0.1u,~,,11,
+C2,100u,~,,1,
+"D1,D2,D3",LTA-1000G,http://optoelectronics.liteon.com/upload/download/DS-30-92-0809/A1000G.pdf,digikey-footprints:LED_Bar_Graph_LTA-1000,3,
+"Q1,Q2,Q3",2SC1815,https://media.digikey.com/pdf/Data%20Sheets/Toshiba%20PDFs/2SC1815.pdf,Package_TO_SOT_THT:TO-92_Inline,3,
+"R1,R2,R3,R7",1K,~,,4,
+R4,100K,~,,1,
+R5,3.3K,~,,1,
+R6,10K,~,,1,
+R8,1.1K,~,,1,
+"RN1,RN2,RN3",R_Network08,http://www.vishay.com/docs/31509/csc.pdf,Resistor_THT:R_Array_SIP9,3,
+"U1,U3,U5,U6",TXB0104PWR,http://www.ti.com/general/docs/suppproductinfo.tsp?distId=10&gotoUrl=http%3A%2F%2Fwww.ti.com%2Flit%2Fgpn%2Ftxb0104,digikey-footprints:TSSOP-14_W4.4mm,4,
+U2,AE-UM232R,,,1,秋月電子
+U4,Raspberry Pi Pico,,,1,
+"U7,U8",74HC595,http://www.ti.com/lit/ds/symlink/sn74hc595.pdf,,2,
+U9,74HC245,http://www.ti.com/lit/gpn/sn74HC245,,1,
+U10,AE-LMR62421,,,1,秋月電子
+U11,UV-EPROM,https://downloads.reactivemicro.com/Electronics/ROM/2764%20EPROM.pdf,Package_DIP:DIP-28_W15.24mm,1,2716など
