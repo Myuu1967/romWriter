@@ -27,9 +27,11 @@ def setAddress(address):
 #     utime.sleep_us(1)
 
 def setData(data):
+    global dataPins
     """指定アドレスにデータをセットする"""
-    for i, pin in enumerate(dataPins):
-        pin.value((byte >> i) & 1)
+    for i in range(8):
+        num = (data >> i) & 1
+        dataPins[i].value(num)
 #     utime.sleep_us(1)
 
 def setDataPinInput():
@@ -43,7 +45,11 @@ def setDataPinOutput():
     dataPins = [Pin(i, Pin.OUT) for i in dataPinList]
 
 def readByteFromBus():
-    return sum(pin.value() << i for i, pin in enumerate(dataPins))
+    global dataPins
+    num = 0
+    for i in range(8):
+        num += (dataPins[i].value() << i)
+    return num
 
 def genericWriteToROM(buffer, size, write_count, setup_pins, \
                       pulse_func, verify_func):
@@ -169,7 +175,7 @@ def writeDataToROM_27128(buffer, size):
         _OE.value(1)
         return value
 
-    genericWriteToROM(buffer, size, write_count=16, setup_pins=setup, pulse_func=pulse, verify_func=verify)
+    genericWriteToROM(buffer, size, write_count=10, setup_pins=setup, pulse_func=pulse, verify_func=verify)
 
 def writeDataToROM_27256(buffer, size):
     def setup():
@@ -214,6 +220,57 @@ def writeDataToROM_27512(buffer, size):
 
     genericWriteToROM(buffer, size, write_count=25, setup_pins=setup, pulse_func=pulse, verify_func=verify)
 
+def writeRom512(buffer, size):
+    address = 0
+    progress_mark = 0  # 表示済みの進捗（10%, 20%, ...）
+
+    setDataPinOutput()
+    VPP.value(1)
+    _CE.value(1)
+
+    for data in buffer:
+        setAddress(address)
+        n = 0
+        while n < write_count:
+            setData(data)
+            utime.sleep_us(3)
+            _CE.value(0)
+            utime.sleep_ms(1)
+            _CE.value(1)
+            utime.sleep_us(3)
+            VPP.value(0)
+
+            utime.sleep_us(3)
+
+            setDataPinInput()
+            utime.sleep_us(3)
+
+            _CE.value(0)
+            utime.sleep_us(2)
+            read_value = readByteFromBus()
+
+            _CE.value(1)
+            VPP.value(1)
+            utime.sleep_us(2)
+            
+            if read_value == data:
+                break
+            n += 1
+            setDataPinOutput()
+
+        address += 1
+        #進捗状況を表示させる
+        new_mark = int((address / size) * 10)
+        if new_mark > progress_mark:
+            progress_mark = new_mark
+            if progress_mark == 10:
+                print("100% completed!!")
+            else:
+                print(f"{progress_mark * 10}% arrived...")
+
+    VPP.value(0)
+
+    
 def eraceLEDs():
 #     led25.value(0)
 
@@ -278,7 +335,7 @@ ROM_INFO = {
 }
 
 # --- ROMタイプ指定 ---
-RomType = 2716  # ←ここを変更するだけでOK！
+RomType = 27512  # ←ここを変更するだけでOK！
 
 # --- ROM情報の取得 ---
 rom_info = ROM_INFO.get(RomType)
@@ -288,7 +345,16 @@ if rom_info is None:
     sys.exit()
 
 target_size = rom_info["size"]
-write_func = rom_info["write_func"]
+rom_func = rom_info["write_func"]
+
+# === 設定 ===
+ROM_SELECT = 3  # ← PC側と合わせて 0〜5 を選択
+ROM_INFO = ROM_OPTIONS.get(ROM_SELECT)
+if ROM_INFO is None:
+    print(f"未定義のROM番号: {ROM_SELECT}")
+    sys.exit()
+
+ROM_TYPE, ROM_SIZE, ROM_FUNC = ROM_INFO
 
 # --- UARTとLED初期化 ---
 uart = UART(0, baudrate=115200, tx=machine.Pin(0), rx=machine.Pin(1))
@@ -311,11 +377,14 @@ try:
                 print(f"{len(data)} bytes 受信, 合計: {len(received_buffer)} bytes")
         utime.sleep_ms(2)
 
+    print("size:",target_size)
     print("受信完了、ROM書き込み開始")
     start_time = utime.ticks_ms()
 
     # --- 書き込み実行 ---
-    write_func(received_buffer, target_size)
+#     write_count = 30
+#     writeRom512(received_buffer, target_size)
+    rom_func(received_buffer, target_size)
 
     end_time = utime.ticks_ms()
     elapsed_time = utime.ticks_diff(end_time, start_time)

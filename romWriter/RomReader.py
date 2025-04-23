@@ -2,7 +2,9 @@ from machine import Pin, UART
 import utime
 import sys
 
-# === ROM種別一覧（番号指定用）===
+ROM_SELECT = 3  # ← PC側と合わせて 0〜5 を選択
+
+# --- ROM情報（容量と書き込み関数） ---
 ROM_OPTIONS = {
     0: ("2716", 2048),
     1: ("2732", 4096),
@@ -13,7 +15,6 @@ ROM_OPTIONS = {
 }
 
 # === 設定 ===
-ROM_SELECT = 5  # ← PC側と合わせて 0〜5 を選択
 ROM_INFO = ROM_OPTIONS.get(ROM_SELECT)
 if ROM_INFO is None:
     print(f"未定義のROM番号: {ROM_SELECT}")
@@ -33,7 +34,7 @@ uart = UART(0, baudrate=115200, tx=Pin(0), rx=Pin(1))
 # --- 信号線初期化 ---
 period = 1
 led25.value(0)
-dir_245.value(1) # value: 0:B-> A, 1:A-> B
+dir_245.value(0) # value: 0:B-> A, 1:A-> B
 VPP.value(1)
 _CE.value(0)
 _OE.value(0)
@@ -69,7 +70,7 @@ def eraceLEDs():
     writeByte(0)
     writeByte(0)
     latch.value(1)
-    dir_245.value(0)
+    dir_245.value(1)
 
 def readRom(size):
     for address in range(size):
@@ -85,6 +86,7 @@ def main():
     start_time = utime.ticks_ms()
 
     try:
+        led25.value(0)
         readRom(ROM_SIZE)
     except Exception as e:
         print("エラーが発生しました:", e)
