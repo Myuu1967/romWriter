@@ -15,7 +15,7 @@ ROM_OPTIONS = {
 }
 
 # === 設定 ===
-ROM_SELECT = 5  # ← 0〜5の番号を指定
+ROM_SELECT = 3  # ← 0〜5の番号を指定
 COM_PORT = "COM12"
 BAUDRATE = 115200
 
@@ -66,7 +66,7 @@ def main():
 
     # シリアルポートを開く
     try:
-        ser = serial.Serial(COM_PORT, BAUDRATE, timeout=10)
+        ser = serial.Serial(COM_PORT, BAUDRATE, timeout=None)
     except serial.SerialException as e:
         print(f"シリアルポートのオープンに失敗しました: {e}")
         return
